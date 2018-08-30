@@ -45,6 +45,10 @@ void loop() {
   Serial.print(" ");
   Serial.print(solar_current);
   Serial.println();
+  Serial.print(batt_voltage_drop);
+  Serial.print(" ");
+  Serial.print(solar_voltage_drop);
+  Serial.println();
   Serial.print(power_loss_batt);
   Serial.print(" ");
   Serial.print(power_loss_solar);
@@ -54,6 +58,6 @@ void loop() {
 
   Serial.flush();
   LowPower.powerDown(SLEEP_8S, ADC_OFF, BOD_OFF); //SLEEP
-  LowPower.powerDown(SLEEP_8S, ADC_OFF, BOD_OFF); //SLEEP
-  delay(1000); //Delay 1 sec for cap to charge
+  //LowPower.powerDown(SLEEP_8S, ADC_OFF, BOD_OFF); //SLEEP
+  //delay(1000); //Delay 1 sec for cap to charge
 }

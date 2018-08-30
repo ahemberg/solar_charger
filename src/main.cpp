@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include <LowPower.h>
+#include <PowerMeter.h>
 
 #define BATT_PIN A0
 #define BUS_PIN A1
@@ -7,10 +8,8 @@
 
 #define SHUNT_RES 4.7
 
-uint16_t batt_adc, solar_adc, bus_adc;
-float batt_voltage, solar_voltage, bus_voltage,batt_voltage_drop,
-      solar_voltage_drop, batt_current, solar_current, power_loss_batt,
-      power_loss_solar;
+PowerMeter batt_meter = PowerMeter(BATT_PIN, BUS_PIN, SHUNT_RES);
+PowerMeter solar_meter = PowerMeter(SOLAR_PIN, BUS_PIN, SHUNT_RES);
 
 void setup() {
   pinMode(BATT_PIN, INPUT);
@@ -18,46 +17,31 @@ void setup() {
 }
 
 void loop() {
-  batt_adc = analogRead(BATT_PIN);
-  solar_adc = analogRead(SOLAR_PIN);
-  bus_adc = analogRead(BUS_PIN);
+  batt_meter.measure();
+  solar_meter.measure();
 
-  batt_voltage = ((float)batt_adc*5.0)/1023.0;
-  solar_voltage = ((float)solar_adc*5.0)/1023.0;
-  bus_voltage = ((float)bus_adc*5.0)/1023.0;
-
-  batt_voltage_drop = batt_voltage - bus_voltage;
-  solar_voltage_drop = solar_voltage - bus_voltage;
-
-  batt_current = (batt_voltage_drop/SHUNT_RES)*1000.0;
-  solar_current = (solar_voltage_drop/SHUNT_RES)*1000.0;
-
-  power_loss_batt = batt_voltage_drop*batt_current;
-  power_loss_solar = solar_voltage_drop*solar_current;
-
-  Serial.print(batt_voltage);
+  Serial.print(batt_meter.supply_voltage);
   Serial.print(" ");
-  Serial.print(solar_voltage);
+  Serial.print(solar_meter.supply_voltage);
   Serial.print(" ");
-  Serial.print(bus_voltage);
+  Serial.print(batt_meter.shunt_voltage);
   Serial.println();
-  Serial.print(batt_current);
+  Serial.print(batt_meter.current);
   Serial.print(" ");
-  Serial.print(solar_current);
+  Serial.print(solar_meter.current);
   Serial.println();
-  Serial.print(batt_voltage_drop);
+  Serial.print(batt_meter.voltage_drop);
   Serial.print(" ");
-  Serial.print(solar_voltage_drop);
+  Serial.print(solar_meter.voltage_drop);
   Serial.println();
-  Serial.print(power_loss_batt);
+  Serial.print(batt_meter.power_loss);
   Serial.print(" ");
-  Serial.print(power_loss_solar);
+  Serial.print(solar_meter.power_loss);
   Serial.println();
   Serial.print("---------------------");
   Serial.println();
 
   Serial.flush();
   LowPower.powerDown(SLEEP_8S, ADC_OFF, BOD_OFF); //SLEEP
-  //LowPower.powerDown(SLEEP_8S, ADC_OFF, BOD_OFF); //SLEEP
-  //delay(1000); //Delay 1 sec for cap to charge
+
 }

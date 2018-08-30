@@ -27,8 +27,9 @@ void PowerMeter::calculate_current() {
   current = voltage_drop/shunt_resistance;
 }
 
-float PowerMeter::calculate_voltage(uint8_t adc_value) {
-  return ((float)adc_value*SUPPLY_VOLTAGE)/1023.0;
+float PowerMeter::calculate_voltage(uint16_t adc_value) {
+  float voltage = ((float)adc_value*5.0)/1023.0;
+  return voltage;
 }
 
 void PowerMeter::calculate_shunt_power_loss() {

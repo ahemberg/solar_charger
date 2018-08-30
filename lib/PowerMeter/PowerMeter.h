@@ -54,7 +54,7 @@
 
    void  calculate_voltage_drop();
    void  calculate_current();
-   float calculate_voltage(uint8_t adc_value);
+   float calculate_voltage(uint16_t adc_value);
    void  calculate_shunt_power_loss();
    void  calculate_total_power();
  };

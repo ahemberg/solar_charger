@@ -2,46 +2,64 @@
 #include <LowPower.h>
 #include <PowerMeter.h>
 
-#define BATT_PIN A0
-#define BUS_PIN A1
-#define SOLAR_PIN A2
+const uint8_t solar_pin = A2;
+const uint8_t bus_pin = A1;
+const uint8_t batt_pin = A0;
+const uint8_t led_discharge_pin = 9;
+const uint8_t led_charge_pin = 10;
 
-#define SHUNT_RES 4.7
 
-PowerMeter batt_meter = PowerMeter(BATT_PIN, BUS_PIN, SHUNT_RES);
-PowerMeter solar_meter = PowerMeter(SOLAR_PIN, BUS_PIN, SHUNT_RES);
+const float shunt_res = 2.2;
+
+
+float ic_current, charge_current;
+
+
+PowerMeter batt_meter = PowerMeter(batt_pin, bus_pin, shunt_res);
+PowerMeter solar_meter = PowerMeter(solar_pin, bus_pin, shunt_res);
 
 void setup() {
-  pinMode(BATT_PIN, INPUT);
+  pinMode(batt_pin, INPUT);
+  pinMode(bus_pin, INPUT);
+  pinMode(solar_pin, INPUT);
+  pinMode(led_discharge_pin, OUTPUT);
+  pinMode(led_charge_pin, OUTPUT);
   Serial.begin(9600);
 }
 
 void loop() {
+
+  delay(1000); //Let system settle
+
   batt_meter.measure();
   solar_meter.measure();
 
-  Serial.print(batt_meter.supply_voltage);
-  Serial.print(" ");
-  Serial.print(solar_meter.supply_voltage);
-  Serial.print(" ");
-  Serial.print(batt_meter.shunt_voltage);
-  Serial.println();
-  Serial.print(batt_meter.current);
-  Serial.print(" ");
-  Serial.print(solar_meter.current);
-  Serial.println();
-  Serial.print(batt_meter.voltage_drop);
-  Serial.print(" ");
-  Serial.print(solar_meter.voltage_drop);
-  Serial.println();
-  Serial.print(batt_meter.power_loss);
-  Serial.print(" ");
-  Serial.print(solar_meter.power_loss);
-  Serial.println();
-  Serial.print("---------------------");
-  Serial.println();
+  ic_current = batt_meter.current + solar_meter.current;
+
+  //Calculate current charging battery
+  if (batt_meter.current < 0) {
+    charge_current = (solar_meter.supply_voltage - batt_meter.supply_voltage)/(shunt_res*2);
+  } else {
+    charge_current = 0;
+  }
+
+  //INTERACT
+  if (charge_current > 0) {
+    digitalWrite(led_charge_pin, HIGH);
+    digitalWrite(led_discharge_pin, LOW);
+  } else {
+    digitalWrite(led_discharge_pin, HIGH);
+    digitalWrite(led_charge_pin, LOW);
+
+  }
+  //delay(1000);
+
+  // INTERACT
 
   Serial.flush();
-  LowPower.powerDown(SLEEP_8S, ADC_OFF, BOD_OFF); //SLEEP
+  //Sleep for one minute (52s)
+  for (uint8_t i=0; i<10; i++) {
+      LowPower.powerDown(SLEEP_8S, ADC_OFF, BOD_OFF);
+  }
 
 }

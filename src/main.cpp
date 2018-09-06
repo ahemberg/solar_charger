@@ -7,7 +7,7 @@ const uint8_t bus_pin = A1;
 const uint8_t batt_pin = A0;
 const uint8_t led_discharge_pin = 9;
 const uint8_t led_charge_pin = 10;
-
+const uint8_t led_both_pin = 11;
 
 const float shunt_res = 2.2;
 
@@ -24,6 +24,7 @@ void setup() {
   pinMode(solar_pin, INPUT);
   pinMode(led_discharge_pin, OUTPUT);
   pinMode(led_charge_pin, OUTPUT);
+  pinMode(led_both_pin, OUTPUT);
   Serial.begin(9600);
 }
 
@@ -44,19 +45,17 @@ void loop() {
   }
 
   //INTERACT
+  digitalWrite(led_charge_pin, LOW);
+  digitalWrite(led_discharge_pin, LOW);
+  digitalWrite(led_both_pin, LOW);
   if (charge_current > 0) {
     digitalWrite(led_charge_pin, HIGH);
-    digitalWrite(led_discharge_pin, LOW);
+  } else if (batt_meter.current > 0 && solar_meter.current > 0) {
+    digitalWrite(led_both_pin, HIGH);
   } else {
     digitalWrite(led_discharge_pin, HIGH);
-    digitalWrite(led_charge_pin, LOW);
-
   }
-  //delay(1000);
-
-  // INTERACT
-
-  Serial.flush();
+  
   //Sleep for one minute (52s)
   for (uint8_t i=0; i<10; i++) {
       LowPower.powerDown(SLEEP_8S, ADC_OFF, BOD_OFF);
